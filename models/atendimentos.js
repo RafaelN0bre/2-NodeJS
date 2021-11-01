@@ -1,7 +1,6 @@
 const conexao = require('../infraestrutura/conexao')
 
 const moment = require('moment')
-const atendimentos = require('../controllers/atendimentos')
 
 class Atendimento {
     adiciona(atendimento, res){
@@ -48,6 +47,62 @@ class Atendimento {
         }
         
 
+    }
+
+    lista(res){
+        const sql = 'SELECT * FROM atendimentos'
+
+        conexao.query(sql, (erro, resultados)=> {
+            if(erro){
+                res.status(400).json()
+            }else{
+                res.status(200).json(resultados)
+            }
+        })
+    }
+
+    buscaPorId(id, res){
+        const sql = `SELECT * FROM atendimentos WHERE id=${id}`
+        
+        conexao.query(sql, (erro, resultados)=> {
+            const atendimento = resultados[0]
+            if(erro){
+                res.status(400).json(erro)
+            }else{
+                res.status(200).json(atendimento)
+            }
+        })
+    }
+
+    altera(id, valores, res){
+        if(valores.data){
+            valores.data = moment(valores.data, 'DD/MM/YYYY').format('YYYY-MM-DD HH:mm:ss')
+        }
+        
+        const sql = 'UPDATE atendimentos SET ? WHERE id=?'
+
+
+        //O segundo parêmtro é o valor que estarão inseridos na interrogação, como temos mais de uma, utilzamos um array
+        conexao.query(sql, [valores, id], (erro, resultados) =>{
+            if(erro){
+                res.status(400).json(erro)
+            }else {
+                res.status(200).json({...valores, id})
+            }
+        })
+    }
+
+    deleta(id, res){
+        const sql = 'DELETE From atendimentos WHERE id = ?'
+
+        conexao.query(sql, id, (erro, resultados) =>{
+            if(erro){
+                res.status(400).json(erro)
+
+            }else{
+                res.status(200).json({id})
+            }
+        })
     }
 }
 
